@@ -15,7 +15,7 @@ const INIT = {
 
 const MultiForm = ({ children }) => {
   const [step, setStep] = useState(0);
-  const [formData, setFormData] = useState(INIT);
+  const [formData, setFormData] = useState({ ...INIT });
   const [visitedSteps, setVisitedSteps] = useState([0]);
 
   const navigate = useNavigate();
@@ -23,23 +23,26 @@ const MultiForm = ({ children }) => {
   const handlePrev = () => setStep((prevStep) => prevStep - 1);
 
   const handleNext = () => {
-    setStep((prevStep) => prevStep + 1);
-    setVisitedSteps((prevVisited) => [...prevVisited, step + 1]);
+    setStep((prevStep) => {
+      setVisitedSteps((prevVisited) => [...prevVisited, prevStep + 1]);
+      return prevStep + 1;
+    });
   };
 
   const updateFormData = (newData) => {
     const updatedData = { ...formData, ...newData };
     setFormData(updatedData);
-    if (step === children.length - 1) {
+    //returns a function which let's u submit- (using closures)
+    return () => {
       handleSubmit(updatedData);
-    }
+    };
   };
 
   const handleSubmit = async (data) => {
-    const filteredData = delete data.acceptTnC;
+    delete data.acceptTnC;
 
     try {
-      const requestBody = JSON.stringify(filteredData);
+      const requestBody = JSON.stringify(data);
       const response = await fetch("https://codebuddy.review/submit", {
         method: "POST",
         body: requestBody,
@@ -59,14 +62,12 @@ const MultiForm = ({ children }) => {
   const formProps = {
     data: formData,
     updateFormData: updateFormData,
-    onPrev: step === 0 ? null : handlePrev,
+    ...(step === 0 ? {} : { onPrev: handlePrev }),
     onNext: handleNext,
   };
 
-  const currentChild = children[step];
-
-  const renderItem = React.isValidElement(currentChild)
-    ? React.cloneElement(currentChild, { ...formProps })
+  const renderItem = React.isValidElement(children[step])
+    ? React.cloneElement(children[step], { ...formProps })
     : null;
 
   return (
@@ -75,19 +76,17 @@ const MultiForm = ({ children }) => {
         {/* tabs for each form */}
         <div className="mb-4 border-b border-gray-200 text-center text-sm font-medium">
           <ul className="-mb-px flex flex-wrap">
-            {children.map((item, i) => {
-              return (
-                <li className="me-2" key={item.props.title}>
-                  <button
-                    className={`inline-block border border-b-0 bg-green-200 ${step < i ? "bg-green-200" : "bg-blue-400"} p-4`}
-                    onClick={() => setStep(i)}
-                    disabled={!visitedSteps.includes(i)}
-                  >
-                    {item.props.title}
-                  </button>
-                </li>
-              );
-            })}
+            {children.map(({ props: { title } }, i) => (
+              <li className="me-2" key={title}>
+                <button
+                  className={`inline-block border border-b-0 ${step < i ? "bg-green-200" : "bg-blue-400"} p-4`}
+                  onClick={() => setStep(i)}
+                  disabled={!visitedSteps.includes(i)}
+                >
+                  {title}
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

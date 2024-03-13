@@ -46,10 +46,17 @@ const ContactForm = ({ data, updateFormData, onPrev }) => {
     setTouchedFields({ countryCode: true, phoneNumber: true, acceptTnC: true });
     const isFormValid = validateForm();
     if (isFormValid) {
-      updateFormData({ countryCode, phoneNumber, acceptTnC });
-      return true;
+      const submitterFn = updateFormData({ countryCode, phoneNumber, acceptTnC });
+      return submitterFn;
     }
     return false;
+  };
+
+  const handleSubmit = () => {
+    const submitterFn = handleSave();
+    if (submitterFn) {
+      submitterFn();
+    }
   };
 
   return (
@@ -113,7 +120,8 @@ const ContactForm = ({ data, updateFormData, onPrev }) => {
 
       {onPrev && <MyButton onClick={onPrev} title={"Prev"} />}
 
-      {handleSave && <MyButton onClick={handleSave} title={"Submit"} />}
+      {handleSave && <MyButton onClick={handleSave} title={"Save"} />}
+      {handleSubmit && <MyButton onClick={handleSubmit} title={"Submit"} />}
     </>
   );
 };
