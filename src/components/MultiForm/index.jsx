@@ -13,7 +13,6 @@ const INIT = {
   acceptTnC: false,
 };
 
-// eslint-disable-next-line react/prop-types
 const MultiForm = ({ children }) => {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState(INIT);
@@ -71,20 +70,26 @@ const MultiForm = ({ children }) => {
     : null;
 
   return (
-    <div>
+    <div className="p-4 sm:w-full md:w-1/2 lg:w-1/3">
       <div>
         {/* tabs for each form */}
-        {children.map((item, i) => {
-          return (
-            <button
-              key={item.props.title}
-              disabled={!visitedSteps.includes(i)}
-              onClick={() => setStep(i)}
-            >
-              {item.props.title}
-            </button>
-          );
-        })}
+        <div className="mb-4 border-b border-gray-200 text-center text-sm font-medium">
+          <ul className="-mb-px flex flex-wrap">
+            {children.map((item, i) => {
+              return (
+                <li className="me-2" key={item.props.title}>
+                  <button
+                    className={`inline-block border border-b-0 bg-green-200 ${step < i ? "bg-green-200" : "bg-blue-400"} p-4`}
+                    onClick={() => setStep(i)}
+                    disabled={!visitedSteps.includes(i)}
+                  >
+                    {item.props.title}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
       {/* Form */}
       {renderItem}
